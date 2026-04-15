@@ -547,8 +547,48 @@ body.dark .toast { background: var(--verde); }
   .disco-fields { grid-template-columns: 1fr; }
   .session-header { padding: 14px 16px; }
   .discursos-list { padding: 8px; }
-  .disco-card { padding: 12px; }
+  .disco-card { padding: 14px; }
   .toolbar-right .btn-export span { display: none; }
+
+  /* === TAMAÑOS DE TEXTO MÓVIL === */
+
+  /* Toolbar */
+  .btn { font-size: 15px; padding: 10px 18px; }
+  .btn-export { font-size: 14px; padding: 9px 14px; }
+  .btn-sm { font-size: 15px; padding: 8px 12px; }
+
+  /* Sesiones */
+  .session-header h2 { font-size: 1.2rem; }
+  .session-time { font-size: 13px; }
+  .session-icon { font-size: 24px; }
+
+  /* Tarjeta: cabecera */
+  .disco-tipo-badge { width: 40px; height: 40px; font-size: 20px; }
+  .disco-tema { font-size: 16px; line-height: 1.35; }
+  .disco-orador-display { font-size: 14px; }
+
+  /* Tarjeta: campos */
+  .disco-field label { font-size: 12px; margin-bottom: 4px; }
+  .disco-field span,
+  .disco-field input { font-size: 16px; }
+  .disco-field.timer-display span { font-size: 22px; letter-spacing: 1.5px; }
+
+  /* Botones del cronómetro */
+  .btn-start,
+  .btn-stop { font-size: 15px; padding: 10px 18px; }
+  .btn-reset { font-size: 14px; padding: 10px 14px; }
+
+  /* Observaciones */
+  .disco-obs { font-size: 15px; min-height: 60px; }
+
+  /* Modal */
+  .modal-header h3 { font-size: 1.2rem; }
+  .form-group label { font-size: 13px; }
+  .form-group input,
+  .form-group select { font-size: 16px; padding: 12px 14px; }
+
+  /* Toast */
+  .toast { font-size: 15px; padding: 12px 22px; }
 }
 
 /* === PRINT === */
