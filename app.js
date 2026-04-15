@@ -48,6 +48,19 @@ let state = {
   discursos: [],    // Lista de discursos
   timers: {},       // { id: { interval, elapsed, startTs, running } }
   darkMode: false,
+  fontSize: 100,    // Porcentaje: 80 a 140
+  header: {
+    badge: 'Asamblea de Circuito 2025–2026',
+    title: '"Tienen que adorarlo con espíritu y con verdad"',
+    verse: 'Juan 4:24',
+  },
+};
+
+// Valores por defecto del header (para resetear)
+const HEADER_DEFAULT = {
+  badge: 'Asamblea de Circuito 2025–2026',
+  title: '"Tienen que adorarlo con espíritu y con verdad"',
+  verse: 'Juan 4:24',
 };
 
 // --- Persistencia con LocalStorage ---
@@ -55,6 +68,8 @@ function saveState() {
   const toSave = {
     discursos: state.discursos,
     darkMode: state.darkMode,
+    fontSize: state.fontSize,
+    header: state.header,
     // Guardamos el tiempo transcurrido (no el interval)
     timersData: Object.fromEntries(
       Object.entries(state.timers).map(([id, t]) => [id, {
@@ -73,6 +88,8 @@ function loadState() {
       const saved = JSON.parse(raw);
       state.discursos = saved.discursos || [];
       state.darkMode  = saved.darkMode  || false;
+      state.fontSize  = saved.fontSize  || 100;
+      state.header    = saved.header    || { ...HEADER_DEFAULT };
       // Restaurar timers
       state.timers = {};
       if (saved.timersData) {
@@ -131,6 +148,8 @@ function render() {
   renderSession('manana');
   renderSession('tarde');
   applyDarkMode();
+  applyFontSize();
+  applyHeader();
 }
 
 function renderSession(sesion) {
@@ -406,6 +425,62 @@ const App = {
     document.getElementById('modalOverlay').classList.remove('open');
   },
 
+  // --- Tamaño de texto ---
+  changeFontSize(delta) {
+    // Pasos de 5%, rango 70% a 150%
+    const next = state.fontSize + (delta * 5);
+    if (next < 70 || next > 150) {
+      showToast(next < 70 ? '⚠️ Tamaño mínimo alcanzado' : '⚠️ Tamaño máximo alcanzado');
+      return;
+    }
+    state.fontSize = next;
+    applyFontSize();
+    saveState();
+    showToast('🔤 Texto al ' + state.fontSize + '%');
+  },
+
+  // --- Abrir modal de encabezado ---
+  openEditHeader() {
+    document.getElementById('hBadge').value  = state.header.badge  || HEADER_DEFAULT.badge;
+    document.getElementById('hTitle').value  = state.header.title  || HEADER_DEFAULT.title;
+    document.getElementById('hVerse').value  = state.header.verse  || HEADER_DEFAULT.verse;
+    document.getElementById('modalHeader').classList.add('open');
+    setTimeout(() => document.getElementById('hTitle').focus(), 100);
+  },
+
+  // --- Guardar encabezado ---
+  saveHeader() {
+    const badge = document.getElementById('hBadge').value.trim();
+    const title = document.getElementById('hTitle').value.trim();
+    const verse = document.getElementById('hVerse').value.trim();
+    if (!title) { showToast('⚠️ El título no puede estar vacío'); return; }
+    state.header = { badge, title, verse };
+    applyHeader();
+    saveState();
+    this.closeHeaderModal();
+    showToast('✅ Encabezado actualizado');
+  },
+
+  // --- Restablecer encabezado por defecto ---
+  resetHeader() {
+    if (!confirm('¿Restablecer el encabezado original?')) return;
+    state.header = { ...HEADER_DEFAULT };
+    applyHeader();
+    saveState();
+    this.closeHeaderModal();
+    showToast('↺ Encabezado restablecido');
+  },
+
+  // --- Cerrar modal de encabezado ---
+  closeHeaderModal() {
+    document.getElementById('modalHeader').classList.remove('open');
+  },
+
+  // --- (legacy) click directo en header --- 
+  editHeader(field) {
+    this.openEditHeader();
+  },
+
   // --- Modo oscuro ---
   toggleDarkMode() {
     state.darkMode = !state.darkMode;
@@ -550,6 +625,22 @@ const App = {
 // ============================================================
 // HELPERS GLOBALES
 // ============================================================
+function applyFontSize() {
+  document.documentElement.style.fontSize = (state.fontSize / 100) + 'rem';
+  // Actualizar label
+  const label = document.getElementById('fontSizeLabel');
+  if (label) label.textContent = state.fontSize + '%';
+}
+
+function applyHeader() {
+  const badge = document.getElementById('headerBadge');
+  const title = document.getElementById('headerTitle');
+  const verse = document.getElementById('headerVerse');
+  if (badge) badge.textContent = (state.header.badge || HEADER_DEFAULT.badge) + ' ✎';
+  if (title) title.textContent = state.header.title || HEADER_DEFAULT.title;
+  if (verse) verse.textContent = state.header.verse || HEADER_DEFAULT.verse;
+}
+
 function applyDarkMode() {
   document.body.classList.toggle('dark', state.darkMode);
   const icon = document.getElementById('darkIcon');

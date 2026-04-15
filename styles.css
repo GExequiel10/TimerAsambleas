@@ -604,3 +604,57 @@ body.dark .toast { background: var(--verde); }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--gris-300); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--verde); }
+
+/* === FONT SIZE CONTROL === */
+.font-size-control {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--surface2);
+}
+.btn-font {
+  background: transparent;
+  border: none;
+  padding: 7px 11px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  color: var(--text);
+  font-family: var(--font-body);
+  transition: background var(--transition);
+  line-height: 1;
+}
+.btn-font:hover { background: var(--verde-bg); color: var(--verde); }
+.btn-font:active { background: var(--verde); color: white; }
+.font-size-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 0 6px;
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  min-width: 38px;
+  text-align: center;
+  line-height: 1;
+  user-select: none;
+}
+
+/* === HEADER EDITABLE === */
+.header-badge, .header-title, .header-verse {
+  cursor: pointer;
+  position: relative;
+  transition: opacity 0.15s;
+}
+.header-badge:hover, .header-title:hover, .header-verse:hover {
+  opacity: 0.85;
+}
+.header-badge { user-select: none; }
+
+/* Responsive: ocultar label % en pantallas muy chicas */
+@media (max-width: 400px) {
+  .font-size-label { display: none; }
+  .btn-font { padding: 7px 9px; }
+}
