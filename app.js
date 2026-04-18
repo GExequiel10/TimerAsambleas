@@ -217,7 +217,10 @@ function createCard(d) {
       <div class="disco-field full">
         <label>📝 Observaciones</label>
         <textarea class="disco-obs" placeholder="Notas, comentarios..."
+          maxlength="180"
+          oninput="App.updateField('${d.id}', 'obs', this.value); App.updateObsCount(this)"
           onchange="App.updateField('${d.id}', 'obs', this.value)">${escapeHtml(d.obs || '')}</textarea>
+        <span class="obs-counter" id="obs-count-${d.id}">${180 - (d.obs ? d.obs.length : 0)} car. restantes</span>
       </div>
     </div>
 
@@ -344,6 +347,18 @@ const App = {
   updateField(id, field, value) {
     const disco = state.discursos.find(d => d.id === id);
     if (disco) { disco[field] = value; saveState(); }
+  },
+
+  // --- Actualizar contador de caracteres en observaciones ---
+  updateObsCount(textarea) {
+    const max = parseInt(textarea.getAttribute('maxlength')) || 180;
+    const remaining = max - textarea.value.length;
+    // Buscar el span contador que sigue al textarea
+    const counter = textarea.parentElement.querySelector('.obs-counter');
+    if (counter) {
+      counter.textContent = remaining + ' car. restantes';
+      counter.classList.toggle('obs-counter-low', remaining <= 30);
+    }
   },
 
   // --- Mostrar modal para agregar ---
@@ -623,37 +638,61 @@ const App = {
           const timer = getTimer(d.id);
           const elapsed = timer.elapsed;
 
-          if (y > 260) { doc.addPage(); y = 15; }
+          // Calcular cuántas líneas ocupa el campo observaciones
+          const obsText = (d.obs || '').trim();
+          const obsMaxW = W - M*2 - 6; // ancho disponible menos padding
+          doc.setFontSize(8);
+          const obsLines = obsText
+            ? doc.splitTextToSize('Obs: ' + obsText, obsMaxW)
+            : [];
+          // Altura dinámica: base 22mm + 4mm por cada línea extra de obs
+          const extraH = Math.max(0, (obsLines.length - 1)) * 4.5;
+          const cardH = 22 + (obsLines.length > 0 ? 7 + extraH : 0);
+
+          // Salto de página si no entra
+          if (y + cardH > 272) { doc.addPage(); y = 15; }
 
           // Fondo alternado
           if (idx % 2 === 0) {
             doc.setFillColor(250, 252, 250);
-            doc.rect(M, y, W - M*2, 22, 'F');
+            doc.rect(M, y, W - M*2, cardH, 'F');
           }
           doc.setDrawColor(200, 225, 200);
-          doc.rect(M, y, W - M*2, 22);
+          doc.rect(M, y, W - M*2, cardH);
 
+          // Título del discurso
           doc.setTextColor(20, 40, 20);
           doc.setFontSize(9);
           doc.setFont('helvetica', 'bold');
-          doc.text((idx+1) + '. ' + d.tema, M + 3, y + 5);
+          const temaLines = doc.splitTextToSize((idx+1) + '. ' + d.tema, W - M*2 - 6);
+          doc.text(temaLines, M + 3, y + 5);
+          const temaH = temaLines.length > 1 ? (temaLines.length - 1) * 4 : 0;
 
+          // Fila de datos: orador, horas, tiempo
           doc.setFont('helvetica', 'normal');
           doc.setTextColor(80, 80, 80);
           doc.setFontSize(8);
           const col1 = M + 3;
           const col2 = M + 65;
-          const col3 = M + 120;
+          const col3 = M + 125;
+          const row1y = y + 11 + temaH;
+          const row2y = row1y + 6;
 
-          doc.text('Orador: ' + (d.orador || '—'), col1, y + 11);
-          doc.text('Hora inicio: ' + (d.horaInicio ? formatHora(d.horaInicio) : '—'), col2, y + 11);
-          doc.text('Hora fin: ' + (d.horaFin ? formatHora(d.horaFin) : '—'), col3, y + 11);
+          doc.text('Orador: ' + (d.orador || '—'), col1, row1y);
+          doc.text('Inicio: ' + (d.horaInicio ? formatHora(d.horaInicio) : '—'), col2, row1y);
+          doc.text('Fin: ' + (d.horaFin ? formatHora(d.horaFin) : '—'), col3, row1y);
+          doc.text('Tiempo: ' + (elapsed > 0 ? formatTime(elapsed) : '—'), col1, row2y);
+          doc.text('Est: ~' + (d.duracion || '?') + ' min', col2, row2y);
 
-          doc.text('Tiempo total: ' + (elapsed > 0 ? formatTime(elapsed) : '—'), col1, y + 17);
-          doc.text('Est: ~' + (d.duracion || '?') + ' min', col2, y + 17);
-          if (d.obs) doc.text('Obs: ' + d.obs.slice(0, 50), col3, y + 17);
+          // Observaciones: texto completo con wrap automático
+          if (obsLines.length > 0) {
+            const obsY = row2y + 6;
+            doc.setTextColor(60, 60, 60);
+            doc.setFont('helvetica', 'italic');
+            doc.text(obsLines, col1, obsY);
+          }
 
-          y += 24;
+          y += cardH + 2;
         });
         y += 4;
       });

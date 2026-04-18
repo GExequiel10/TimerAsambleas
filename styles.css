@@ -703,3 +703,18 @@ body.dark .btn-share:hover {
   background: #2563eb;
   color: white;
 }
+
+/* === CONTADOR DE CARACTERES EN OBSERVACIONES === */
+.obs-counter {
+  display: block;
+  text-align: right;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 3px;
+  transition: color 0.2s;
+  user-select: none;
+}
+.obs-counter-low {
+  color: var(--amarillo);
+  font-weight: 600;
+}
